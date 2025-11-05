@@ -1,0 +1,4 @@
+C:/Code/cppLua/build/CMakeFiles/cpplua.dir
+C:/Code/cppLua/build/CMakeFiles/helloworld.dir
+C:/Code/cppLua/build/CMakeFiles/ALL_BUILD.dir
+C:/Code/cppLua/build/CMakeFiles/ZERO_CHECK.dir
