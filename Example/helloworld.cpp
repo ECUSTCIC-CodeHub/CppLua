@@ -1,16 +1,10 @@
-#include <iostream>
+﻿#include <iostream>
 #include <Windows.h>
-#include "LuaParser.h"
-
+#include "LuaVM.h"
 int main() 
 {
-    system("chcp 65001");
-    std::ifstream fs;
-    fs.open("D:/Code/Learn/mylua/CppLua/Example/test.lua");
-
-    Engine::Parser parser(fs);
-    
-    parser.Parse();
-    std::cout << "Hello, World!" << std::endl;
+    //system("chcp 65001");
+    Engine::VM vm("C:/Code/cppLua/Example/test.lua");
+    vm.Excute();
     return 0;
 }

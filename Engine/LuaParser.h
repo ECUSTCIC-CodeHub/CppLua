@@ -13,7 +13,23 @@ namespace Engine
         Parser(std::ifstream& inputStream)
             : lexer(inputStream)
         {
-            
+            Value::function print_func = [](const std::vector<Value>& args) -> Value {
+                // 遍历所有参数，转换为字符串并打印
+                for (size_t i = 0; i < args.size(); ++i) {
+                    if (i > 0) std::cout << " "; // 参数之间加空格分隔
+                    try {
+                        // 利用 Value 的 string 转换运算符，自动处理不同类型
+                        std::cout << static_cast<std::string>(args[i]);
+                    }
+                    catch (const std::bad_variant_access&) {
+                        // 理论上不会触发（已在 string 转换中覆盖所有类型）
+                        std::cout << "[unknown]";
+                    }
+                }
+                std::cout << std::endl; // 换行
+                return Value{}; // 返回空值（std::monostate）
+                };
+            context.Globals["print"] = Value(print_func);
         }
 
         ProgramContext Parse()
@@ -22,8 +38,7 @@ namespace Engine
             next = lexer.NextToken();
             while(current.token != TokenType::Eof)
             {    
-                //ParseStatement();
-                std::cout << current.toString() << std::endl;
+                ParseStatement();
                 Advance();
             }
 
@@ -36,9 +51,9 @@ namespace Engine
         {
             if (current.token == TokenType::Identifier)
             {
-                std::string id = std::get<std::string>(current.value);
+                std::string id = static_cast<std::string>(current.value);
 
-                if (next.token == TokenType::Identifier && std::get<std::string>(next.value) == "(")
+                if (current.token == TokenType::Identifier && next.token == TokenType::ParL)
                 {
                     ParseFunctionCall(id);
                 }
@@ -51,24 +66,74 @@ namespace Engine
 
         void ParseFunctionCall(std::string& functionName)
         {
-            Advance(); // 函数名
-            Advance(); // 左括号
-
-            // TODO: 参数获取解析
             // 1. 从全局变量表获得函数名
             // 2. 加载到调用栈上
             // 3. 加载参数到调用栈
-            uint32_t globalIdx = GetGlobalIndex(functionName);
-            context.Operations.push_back({OpCode::LoadGlobal, globalIdx});
-            context.Operations.push_back({OpCode::LoadConst, 0});
-            context.Operations.push_back({OpCode::Call, 0, 1});
-            
+            Advance(); // 函数名
+            Consume("(");
+
+            std::vector<uint16_t> paramIndices;
+            int globalIdx = GetGlobalIndex(functionName);
+            context.Constants.push_back(functionName);
+            Operation a = Operation(OpCode::LoadGlobal, context.Constants.size() - 1);
+            context.Operations.push_back(a);
+
+            ParseExpression(paramIndices);
+
+            Consume(")");
+
+            context.Operations.push_back({OpCode::Call, globalIdx, 1});
+        }
+
+        void ParseExpression(std::vector<uint16_t>& paramIndices)
+        {
+            switch (current.token)
+            {
+            case TokenType::String:
+            case TokenType::Number:
+                paramIndices.push_back(GetConstantIndex(current.value));
+                context.Operations.emplace_back(OpCode::LoadConst, paramIndices.back());
+                Advance();
+                break;
+            default:
+                throw std::runtime_error("语法错误：不支持的参数类型 " + current.toString());
+            }
         }
 
         void Advance()
         {
+            std::cout << current.toString() << std::endl;
             current = next;
             next = lexer.NextToken();
+        }
+
+        void Consume(const std::string& expectedStr)
+        {
+            if (static_cast<std::string>(current.value) == expectedStr)
+            {
+                Advance();
+            }
+            else
+            {
+                throw std::runtime_error(
+                    "语法错误：预期 '" + expectedStr + "'，实际得到 " + current.toString()
+                );
+            }
+        }
+
+        uint16_t GetConstantIndex(const Value& val)
+        {
+            auto it = std::find(context.Constants.begin(), context.Constants.end(), val);
+            if (it != context.Constants.end())
+            {
+                return static_cast<uint16_t>(std::distance(context.Constants.begin(), it));
+            }
+
+            if (context.Constants.size() >= UINT16_MAX)
+                throw std::runtime_error("常量表溢出");
+            uint16_t idx = static_cast<uint16_t>(context.Constants.size());
+            context.Constants.push_back(val);
+            return idx;
         }
 
         uint32_t GetGlobalIndex(std::string& name)
@@ -89,8 +154,6 @@ namespace Engine
             }
             return static_cast<uint16_t>(context.Globals.size() - 1);
         }
-
-
 
     private:
         Lex lexer;

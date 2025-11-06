@@ -44,11 +44,17 @@ namespace Engine
                     return ReadNumber();
                 }
 
-                        // 识别括号
-                if (current == '(' || current == ')')
+                if (current == '(')
                 {
-                    current = input.get();
-                    continue;
+                    current = input.get(); // 读取下一个字符
+                    return { TokenType::ParL, "(" }; // 返回 ParL Token
+                }
+
+                // 识别右括号 ')'
+                if (current == ')')
+                {
+                    current = input.get(); // 读取下一个字符
+                    return { TokenType::ParR, ")" }; // 返回 ParR Token
                 }
                 
                 // 未知字符（抛出异常或返回错误Token，这里选择抛出）
@@ -56,7 +62,7 @@ namespace Engine
             }
 
             // 到达文件末尾，返回EOF Token（值为monostate，无实际内容）
-            return { TokenType::Eof, std::monostate{} };
+            return { TokenType::Eof };
         }
 
     private:

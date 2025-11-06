@@ -11,7 +11,7 @@ set(SOURCE
 
 add_library(cpplua STATIC ${SOURCE})
 target_include_directories(cpplua 
-    PRIVATE  # 若只有 cpplua 自身用 Engine 头文件，用 PRIVATE；若其他项目依赖也需用，用 PUBLIC
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Engine  # 绝对路径，避免歧义
 )
 
