@@ -1,5 +1,18 @@
+#pragma once
 
-void func()
+#include "LuaState.h"
+#include "LuaParser.h"
+
+namespace Engine
 {
-    int a = 10;
+    class VM
+    {
+    public:
+        void Excute()
+        {
+            
+        }
+    private:
+        Parser parser;
+    };
 }

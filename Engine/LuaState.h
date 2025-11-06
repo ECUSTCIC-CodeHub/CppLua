@@ -5,6 +5,10 @@
 #include <unordered_map>
 #include <string>
 #include <array>
+#include <string>
+#include <sstream> 
+#include <functional>
+#include <cmath>
 
 namespace Engine
 {
@@ -16,12 +20,66 @@ namespace Engine
         Number,
     };
 
-    using Value = std::variant<std::monostate, std::string, double, bool>;
+    struct Value
+    {
+        using number = double;
+        using function = std::function<Value(const std::vector<Value>&)>;
+        using type = std::variant<
+            std::monostate,
+            bool,
+            number,
+            std::string,
+            function
+            >;
+
+        Value() :value(std::monostate{}) {}
+
+        Value(bool v) :value(v) {}
+
+        Value(int v) :value(static_cast<number>(v)) {}
+        Value(float v) :value(static_cast<number>(v)) {}
+        Value(double v) :value(static_cast<number>(v)) {}
+
+        Value(const char* v) : value(std::string(v)) {}
+        Value(std::string v) : value(std::move(v)) {}
+        
+        Value(function v) : value(std::move(v)) {}
+
+    private:
+        type value;
+    };
 
     struct Token
     {
         TokenType token;
         Value value;
+
+        std::string toString()
+        {
+            std::string tk("type: ");
+            switch (this->token)
+            {
+            case TokenType::Eof:
+                tk += "Eof";
+                break;
+            case TokenType::Identifier:
+                tk += "Identifier";
+                break;
+            case TokenType::String:
+                tk += "String";
+                break;
+            case TokenType::Number:
+                tk += "Number";
+                break;
+            default:
+                tk += "Unknown";
+            }
+
+            tk += ", value: ";
+
+           
+            return tk;
+        }
     };
 
     enum class OpCode
@@ -36,7 +94,7 @@ namespace Engine
     struct Operation
     {
         OpCode opCode;
-        std::vector<uint8_t> args;
+        std::vector<uint32_t> args;
         
         Operation() = delete;
 
@@ -45,13 +103,13 @@ namespace Engine
         { }
 
         template <typename Container, // 匹配容器
-            std::enable_if_t<std::is_constructible_v<std::vector<uint16_t>, Container&&>, int> = 0>
+            std::enable_if_t<std::is_constructible_v<std::vector<uint32_t>, Container&&>, int> = 0>
         Operation(OpCode op_code, Container&& container)
-            :op(op_code), args(std::forward<Container>(container))
+            :opCode(op_code), args(std::forward<Container>(container))
         { }
 
         template<typename... Args,   // 匹配实参
-            std::enable_if_t<std::conjunction_v<std::is_convertible<Args, uint16_t>...>, int> = 0>
+            std::enable_if_t<std::conjunction_v<std::is_convertible<Args, uint32_t>...>, int> = 0>
         Operation(OpCode code, Args... arguments)
             : opCode(code), args({ static_cast<uint8_t>(arguments)... })
         { }

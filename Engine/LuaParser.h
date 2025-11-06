@@ -3,6 +3,8 @@
 #include "LuaState.h"
 #include "LuaLex.h"
 
+#include <iostream>
+
 namespace Engine
 {
     class Parser
@@ -11,15 +13,18 @@ namespace Engine
         Parser(std::ifstream& inputStream)
             : lexer(inputStream)
         {
-            current = lexer.NextToken();
-            next = lexer.NextToken();
+            
         }
 
         ProgramContext Parse()
         {
+            current = lexer.NextToken();
+            next = lexer.NextToken();
             while(current.token != TokenType::Eof)
-            {
-                ParseStatement();
+            {    
+                //ParseStatement();
+                std::cout << current.toString() << std::endl;
+                Advance();
             }
 
             context.Operations.push_back(OpCode::Exit);
@@ -46,10 +51,17 @@ namespace Engine
 
         void ParseFunctionCall(std::string& functionName)
         {
-            Advance();
-            Advance();
+            Advance(); // 函数名
+            Advance(); // 左括号
 
+            // TODO: 参数获取解析
+            // 1. 从全局变量表获得函数名
+            // 2. 加载到调用栈上
+            // 3. 加载参数到调用栈
             uint32_t globalIdx = GetGlobalIndex(functionName);
+            context.Operations.push_back({OpCode::LoadGlobal, globalIdx});
+            context.Operations.push_back({OpCode::LoadConst, 0});
+            context.Operations.push_back({OpCode::Call, 0, 1});
             
         }
 
@@ -77,6 +89,8 @@ namespace Engine
             }
             return static_cast<uint16_t>(context.Globals.size() - 1);
         }
+
+
 
     private:
         Lex lexer;

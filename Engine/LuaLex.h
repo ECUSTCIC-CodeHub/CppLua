@@ -44,6 +44,13 @@ namespace Engine
                     return ReadNumber();
                 }
 
+                        // 识别括号
+                if (current == '(' || current == ')')
+                {
+                    current = input.get();
+                    continue;
+                }
+                
                 // 未知字符（抛出异常或返回错误Token，这里选择抛出）
                 throw std::runtime_error("未知字符: " + std::string(1, static_cast<char>(current)));
             }
