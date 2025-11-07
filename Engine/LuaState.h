@@ -11,6 +11,7 @@
 #include <concepts>
 #include <type_traits>
 #include <ranges>
+#include <algorithm>
 
 namespace Engine
 {
@@ -41,9 +42,9 @@ namespace Engine
 
         Value(bool v) : value(v) {}
 
-        Value(int v)    : value(static_cast<number>(v)) {}
-        Value(float v)  : value(static_cast<number>(v)) {}
-        Value(double v) : value(static_cast<number>(v)) {}
+        template<typename t>
+            requires std::is_convertible_v<t, number>
+        Value(t v) : value(static_cast<number>(v)) {}
 
         Value(const char* v) : value(std::string(v)) {}
         Value(std::string v) : value(std::move(v)) {}
@@ -147,7 +148,6 @@ namespace Engine
         {
             std::string result;
 
-            // 1. 输出 Token 类型名称
             result += "TokenType: ";
             switch (token)
             {
@@ -160,10 +160,8 @@ namespace Engine
             default:                    result += "Unknown"; break;
             }
 
-            // 2. 输出 Value 信息（类型 + 值）
             result += " | Value: [Type: ";
 
-            // 根据 variant 的 index 判断 Value 实际类型
             switch (value.value.index())
             {
             case 0: // std::monostate
@@ -175,11 +173,10 @@ namespace Engine
                 result += std::get<bool>(value.value) ? "true" : "false";
                 break;
 
-            case 2: // number (double)
+            case 2: // number
                 result += "Number, Value: ";
                 {
                     double num = std::get<Value::number>(value.value);
-                    // 处理整数情况（避免输出 .000000）
                     if (num == static_cast<long long>(num))
                     {
                         result += std::to_string(static_cast<long long>(num));
@@ -187,7 +184,6 @@ namespace Engine
                     else
                     {
                         result += std::to_string(num);
-                        // 移除末尾多余的 0 和小数点（可选优化）
                         result.erase(result.find_last_not_of('0') + 1, std::string::npos);
                         if (result.back() == '.')
                         {
@@ -205,7 +201,6 @@ namespace Engine
 
             case 4: // function
                 result += "Function, Value: <callable>";
-                // 可选：判断函数是否为空
                 if (!std::get<Value::function>(value.value))
                 {
                     result += " (empty)";

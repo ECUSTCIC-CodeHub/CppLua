@@ -13,20 +13,17 @@ namespace Engine
         Parser(std::ifstream& inputStream)
             : lexer(inputStream)
         {
-            Value::function print_func = [](const std::vector<Value>& args) -> Value {
-                // 遍历所有参数，转换为字符串并打印
+            Value::function print_func = [](const std::vector<Value>& args) -> Value 
+                {
                 for (size_t i = 0; i < args.size(); ++i) {
-                    if (i > 0) std::cout << " "; // 参数之间加空格分隔
                     try {
-                        // 利用 Value 的 string 转换运算符，自动处理不同类型
                         std::cout << static_cast<std::string>(args[i]);
                     }
                     catch (const std::bad_variant_access&) {
-                        // 理论上不会触发（已在 string 转换中覆盖所有类型）
                         std::cout << "[unknown]";
                     }
                 }
-                std::cout << std::endl; // 换行
+                std::cout << std::endl;
                 return Value{}; // 返回空值（std::monostate）
                 };
             context.Globals["print"] = Value(print_func);
@@ -66,17 +63,18 @@ namespace Engine
 
         void ParseFunctionCall(std::string& functionName)
         {
-            // 1. 从全局变量表获得函数名
-            // 2. 加载到调用栈上
-            // 3. 加载参数到调用栈
+            // 1. 从全局变量表获得函数名，保存到常量表中
+            // 2. 加载函数名到调用栈上
+            // 3. 参数加入到常量表中
+            // 4. 加载到参数到调用栈上
+            // 5. 调用函数
             Advance(); // 函数名
             Consume("(");
 
             std::vector<uint16_t> paramIndices;
             int globalIdx = GetGlobalIndex(functionName);
             context.Constants.push_back(functionName);
-            Operation a = Operation(OpCode::LoadGlobal, context.Constants.size() - 1);
-            context.Operations.push_back(a);
+            context.Operations.push_back({ OpCode::LoadGlobal, context.Constants.size() - 1 });
 
             ParseExpression(paramIndices);
 
