@@ -19,10 +19,28 @@ namespace Engine
     {
         Eof,
         Identifier,
+
+        //常量
         String,
         Number,
-        ParL,
-        ParR,
+
+        // 关键词
+        And, Break, Do, Else, Elseif, End,
+        False, For, Function, Goto, If, In,
+        Local, Nil, Not, Or, Repeat, Return,
+        Then, True, Until, While,
+
+        // 符号
+        // +       -       *       /       %       ^       #
+        Add, Sub, Mul, Div, Mod, Pow, Len,
+        // &       ~       |       <<      >>      //
+        BitAnd, BitXor, BitOr, ShiftL, ShiftR, Idiv,
+        // ==       ~=     <=      >=      <       >        =
+        Equal, NotEq, LesEq, GreEq, Less, Greater, Assign,
+        // (       )       {       }       [       ]       ::
+        ParL, ParR, CurlyL, CurlyR, SqurL, SqurR, DoubColon,
+        // ;               :       ,       .       ..      ...
+        SemiColon, Colon, Comma, Dot, Concat, Dots,
     };
 
     struct Value
@@ -151,12 +169,79 @@ namespace Engine
             result += "TokenType: ";
             switch (token)
             {
+                // 基础类型
             case TokenType::Eof:        result += "Eof"; break;
             case TokenType::Identifier: result += "Identifier"; break;
             case TokenType::String:     result += "String"; break;
             case TokenType::Number:     result += "Number"; break;
+
+                // 关键词
+            case TokenType::And:        result += "And"; break;
+            case TokenType::Break:      result += "Break"; break;
+            case TokenType::Do:         result += "Do"; break;
+            case TokenType::Else:       result += "Else"; break;
+            case TokenType::Elseif:     result += "Elseif"; break;
+            case TokenType::End:        result += "End"; break;
+            case TokenType::False:      result += "False"; break;
+            case TokenType::For:        result += "For"; break;
+            case TokenType::Function:   result += "Function"; break;
+            case TokenType::Goto:       result += "Goto"; break;
+            case TokenType::If:         result += "If"; break;
+            case TokenType::In:         result += "In"; break;
+            case TokenType::Local:      result += "Local"; break;
+            case TokenType::Nil:        result += "Nil"; break;
+            case TokenType::Not:        result += "Not"; break;
+            case TokenType::Or:         result += "Or"; break;
+            case TokenType::Repeat:     result += "Repeat"; break;
+            case TokenType::Return:     result += "Return"; break;
+            case TokenType::Then:       result += "Then"; break;
+            case TokenType::True:       result += "True"; break;
+            case TokenType::Until:      result += "Until"; break;
+            case TokenType::While:      result += "While"; break;
+
+                // 算术运算符
+            case TokenType::Add:        result += "Add(+)"; break;
+            case TokenType::Sub:        result += "Sub(-)"; break;
+            case TokenType::Mul:        result += "Mul(*)"; break;
+            case TokenType::Div:        result += "Div(/)"; break;
+            case TokenType::Mod:        result += "Mod(%)"; break;
+            case TokenType::Pow:        result += "Pow(^)"; break;
+            case TokenType::Len:        result += "Len(#)"; break;
+
+                // 位运算与移位
+            case TokenType::BitAnd:     result += "BitAnd(&)"; break;
+            case TokenType::BitXor:     result += "BitXor(~)"; break;
+            case TokenType::BitOr:      result += "BitOr(|)"; break;
+            case TokenType::ShiftL:     result += "ShiftL(<<)"; break;
+            case TokenType::ShiftR:     result += "ShiftR(>>)"; break;
+            case TokenType::Idiv:       result += "Idiv(//)"; break;
+
+                // 比较运算符与赋值
+            case TokenType::Equal:      result += "Equal(==)"; break;
+            case TokenType::NotEq:      result += "NotEq(~=)"; break;
+            case TokenType::LesEq:      result += "LesEq(<=)"; break;
+            case TokenType::GreEq:      result += "GreEq(>=)"; break;
+            case TokenType::Less:       result += "Less(<)"; break;
+            case TokenType::Greater:    result += "Greater(>)"; break;
+            case TokenType::Assign:     result += "Assign(=)"; break;
+
+                // 括号与作用域
             case TokenType::ParL:       result += "ParL(左括号)"; break;
             case TokenType::ParR:       result += "ParR(右括号)"; break;
+            case TokenType::CurlyL:     result += "CurlyL(左大括号{)"; break;
+            case TokenType::CurlyR:     result += "CurlyR(右大括号})"; break;
+            case TokenType::SqurL:      result += "SqurL(左方括号[)"; break;
+            case TokenType::SqurR:      result += "SqurR(右方括号])"; break;
+            case TokenType::DoubColon:  result += "DoubColon(::)"; break;
+
+                // 分隔符与连接符
+            case TokenType::SemiColon:  result += "SemiColon(;)"; break;
+            case TokenType::Colon:      result += "Colon(:)"; break;
+            case TokenType::Comma:      result += "Comma(,)"; break;
+            case TokenType::Dot:        result += "Dot(.)"; break;
+            case TokenType::Concat:     result += "Concat(..)"; break;
+            case TokenType::Dots:       result += "Dots (...)"; break;
+
             default:                    result += "Unknown"; break;
             }
 

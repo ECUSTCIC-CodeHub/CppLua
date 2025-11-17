@@ -17,13 +17,14 @@ namespace Engine
             sp = 0;
         }
 
-        void Excute()
+        void Execute()
         {
             try
             {
                 for(size_t ip = 0; ip < context.Operations.size(); ++ip)
                 {
                     const auto& op = context.Operations[ip];
+                    std::cout << "Executing op " << (int)op.opCode << ", sp=" << sp << std::endl;
                     switch (op.opCode)
                     {
                     case OpCode::Exit:
@@ -54,7 +55,11 @@ namespace Engine
                             args.push_back(context.stack[i + 1]);
                         }
                         Value result = context.stack[0].Call(args);
-                        context.stack[0] = result;
+                        // 清空栈，重新开始
+                        for (size_t i = 0; i < context.stack.size(); ++i) {
+                            context.stack[i] = Value{};
+                        }
+                        sp = 0; // 重置栈指针到0
                         break;
                     }
                     default:
